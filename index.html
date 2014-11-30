@@ -1,0 +1,199 @@
+  <!--Add a button for the user to click to initiate auth sequence -->
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <style type="text/css">
+      .activeTask{ background: red; width: 500px; margin: 0 auto;}
+    </style>
+  </head>
+  <body>
+    <div id='activeTask'></div>
+    <div id='nextTask'></div>
+    <div id='timeleft'></div>
+    <button id="authorize-button" style="visibility: hidden">Authorize</button>
+    <script type="text/javascript">
+
+      var clientId = '217133815695-27ri61m2k2pv2f1fbp4uukpe38kb8lhd.apps.googleusercontent.com',
+          scopes = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.me'];
+
+      function handleClientLoad() {
+
+
+        window.setTimeout(checkAuth,1);
+      }
+
+      function checkAuth() {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+      }
+
+      function handleAuthResult(authResult) {
+        var authorizeButton = document.getElementById('authorize-button');
+        if (authResult && !authResult.error) {
+          authorizeButton.style.visibility = 'hidden';
+          makeApiCall();
+        } else {
+          authorizeButton.style.visibility = '';
+          authorizeButton.onclick = handleAuthClick;
+        }
+      }
+
+      function handleAuthClick(event) {
+
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+        return false;
+      }
+
+      function makeApiCall() {
+
+        gapi.client.load('plus', 'v1').then(function() {
+          // Step 5: Assemble the API request
+          var request = gapi.client.plus.people.get({
+            'userId': 'me'
+          });
+
+          request.then(function(resp) {
+            console.log(resp);
+            var userEmail = resp.result.emails[0].value;
+                // Step 4: Load the Calendar API
+            gapi.client.load('calendar', 'v3').then(function() {
+              var currentDate = new Date();
+              // Step 5: Assemble the API request
+              var request = gapi.client.calendar.events.list({
+                'calendarId': userEmail,
+                'timeMin':  currentDate.toISOString(),
+                'timeMax':  (new Date(currentDate.setDate(currentDate.getDate() + 3))).toISOString(),
+                'orderBy': 'startTime',
+                'singleEvents': true
+              });
+
+              request.then(function(resp) {
+                drawEvents(resp.result.items);
+                console.log(resp)
+              }, function(reason) {
+                console.log('Error: ' + reason.result.error.message);
+              });
+            });
+          }, function(reason) {
+            console.log('Error: ' + reason.result.error.message);
+          });
+        });
+      }
+
+
+      function drawEvents(tasks){
+        var currentTime, startTime, endTime, activeIdx;
+
+         var nothingActive = true;
+
+        for(var i = 0; i < tasks.length; i++){
+          currentTime = (new Date()).getTime();
+          startTime = (new Date(tasks[i].start.dateTime)).getTime();
+          endTime = (new Date(tasks[i].end.dateTime)).getTime();
+
+          if(startTime <= currentTime && endTime >= currentTime){
+            nothingActive = false;
+            activeIdx = i;
+            task.addClass('activeTask');
+
+            setActiveTimeout(currentTime, startTime, endTime)
+          }
+
+        }
+
+       if(nothingActive){
+          console.log('setting break')
+          setBreakTimeout(currentTime);
+        }
+
+
+        function setActiveTimeout(current, start, end){
+          var timeLeft = end - current;
+          setTimeLeft(timeLeft)
+          setTimeout(function(){
+            console.log('Event is finished!')
+            $('.activeTask').removeClass('activeTask');
+            processNewActive()
+          }, timeLeft)
+        }
+
+        function processNewActive(){
+          var nothingActive = true;
+
+          for(var i = 0; i < tasks.length; i++){
+
+            currentTime = (new Date()).getTime();
+            startTime = (new Date(tasks[i].start.dateTime)).getTime();
+            endTime = (new Date(tasks[i].end.dateTime)).getTime();
+
+            if(startTime <= currentTime && endTime >= currentTime){
+              nothingActive = false;
+              activeIdx = i;
+
+              setActiveTimeout(currentTime, startTime, endTime);
+            }
+          }
+
+          if(nothingActive){
+            setBreakTimeout(currentTime);
+          }
+        }
+
+        function setBreakTimeout(current){
+          debugger
+          setTasks(true)
+
+          var nextStart = (new Date(tasks[activeIdx + 1].start.dateTime)).getTime();
+          var timeLeft = nextStart - current;
+
+          setTimeLeft(timeLeft)
+
+          setTimeout(function(){
+            processNewActive()
+          }, timeLeft)
+
+        }
+        function setTasks(isBreak){
+
+          if(activeIdx === undefined){
+            activeIdx = -1;
+          }
+
+          if(activeIdx === -1 || isBreak){
+            $('#activeTask').html('Break');
+          } else {
+            $('#activeTask').html(tasks[activeIdx].summary);
+          }
+
+          if(tasks[activeIdx + 1] === undefined) {
+            $('#nextTask').html('No Tasks Left')
+            return
+          } else{
+            $('#nextTask').html(tasks[activeIdx + 1].summary)
+          }
+        }
+
+      }
+
+      function setTimeLeft(timeLeft){
+        var updateTime = function(){
+          if(timeLeft > 0){
+            $('#timeleft').html(Math.ceil(timeLeft/60000) + ' minutes left')
+          }
+          timeLeft -= 60000;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+      }
+
+
+
+
+
+
+    </script>
+    <!-- // Step 1: Load JavaScript client library -->
+    <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+  </body>
+</html>
