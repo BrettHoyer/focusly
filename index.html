@@ -16,7 +16,8 @@
     <script type="text/javascript">
 
       var clientId = '217133815695-27ri61m2k2pv2f1fbp4uukpe38kb8lhd.apps.googleusercontent.com',
-          scopes = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.me'];
+          // scopes = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.me'];
+          scopes = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email'];
 
       function handleClientLoad() {
 
@@ -29,6 +30,7 @@
       }
 
       function handleAuthResult(authResult) {
+        console.log(authResult)
         var authorizeButton = document.getElementById('authorize-button');
         if (authResult && !authResult.error) {
           authorizeButton.style.visibility = 'hidden';
@@ -47,17 +49,10 @@
 
       function makeApiCall() {
 
-        gapi.client.load('plus', 'v1').then(function() {
-          // Step 5: Assemble the API request
-          var request = gapi.client.plus.people.get({
-            'userId': 'me'
-          });
-
-          request.then(function(resp) {
-            console.log(resp);
-            var userEmail = resp.result.emails[0].value;
-                // Step 4: Load the Calendar API
-            gapi.client.load('calendar', 'v3').then(function() {
+        gapi.client.load('oauth2', 'v2', function(){
+          gapi.client.oauth2.userinfo.get().execute(function(resp){
+            var userEmail = resp.email;
+             gapi.client.load('calendar', 'v3').then(function() {
               var currentDate = new Date();
               // Step 5: Assemble the API request
               var request = gapi.client.calendar.events.list({
@@ -75,10 +70,11 @@
                 console.log('Error: ' + reason.result.error.message);
               });
             });
-          }, function(reason) {
+          },function(reason) {
             console.log('Error: ' + reason.result.error.message);
-          });
-        });
+          })
+        })
+
       }
 
 
@@ -141,7 +137,6 @@
         }
 
         function setBreakTimeout(current){
-          debugger
           setTasks(true)
 
           var nextStart = (new Date(tasks[activeIdx + 1].start.dateTime)).getTime();
