@@ -32,7 +32,7 @@
                   <div class="container">
                   <button id="authorize-button" style="visibility: hidden">Authorize</button>
                       <div class="hero-unit">
-                          <h1 id='activeTask'>Finding current tasks...</h1>
+                          <h1 id='activeTask'>Finding current activity...</h1>
                           <h3 id="timeleft" style="font-size:18px;color:white;margin-top:20px">On Vacation</h3>
                       </div>
                   </div>
@@ -49,7 +49,7 @@
     </section>
     <footer class="footer-4" style="height:10%">
       <div class="container">
-          <a class="brand" id="nextTask" href="#">Finding next tasks...</a>
+          <a class="brand" id="nextTask" href="#">Finding next activity...</a>
       </div>
     </footer>
     
@@ -261,7 +261,7 @@
       // Randomly change the backgrounds of both divs
 
       // make an array of possible classes
-      var backgroundsPairs = [['bg-turquoise','bg-wet-asphalt'],['bg-sun-flower','bg-midnight-blue'],['bg-alizarin','bg-belize-hole']]
+      var backgroundsPairs = [['bg-turquoise','bg-wet-asphalt'],['bg-sun-flower','bg-midnight-blue'],['bg-alizarin','bg-belize-hole'],['bg-amethyst','bg-silver']]
 
       // pick a class out of that array
       // backgroundsPairs[1][0]
@@ -269,7 +269,7 @@
       function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
       }
-      var pairNumber = getRandomInt(0,3)
+      var pairNumber = getRandomInt(0,backgroundsPairs.length)
 
       // add class to a particular div
       $('section.header-16-sub').addClass(backgroundsPairs[pairNumber][0])
