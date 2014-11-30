@@ -26,7 +26,7 @@
 
     <section class="header-16-sub" style="height: 90%">
       <div id="h-16-pt-main" class="page-transitions pt-perspective">
-          <div class="v-center pt-page pt-page-1 pt-page-current bg-turquoise">
+          <div class="v-center pt-page pt-page-1 pt-page-current">
               <div>
                   <div class="background">&nbsp;</div>
                   <div class="container">
@@ -47,7 +47,7 @@
           </div>
       </div>
     </section>
-    <footer class="footer-4 bg-midnight-blue" style="height:10%">
+    <footer class="footer-4" style="height:10%">
       <div class="container">
           <a class="brand" id="nextTask" href="#">Finding next tasks...</a>
       </div>
@@ -258,7 +258,24 @@
         setInterval(updateTime, 60000);
       }
 
+      // Randomly change the backgrounds of both divs
 
+      // make an array of possible classes
+      var backgroundsPairs = [['bg-turquoise','bg-wet-asphalt'],['bg-sun-flower','bg-midnight-blue'],['bg-alizarin','bg-belize-hole']]
+
+      // pick a class out of that array
+      // backgroundsPairs[1][0]
+
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+      }
+      var pairNumber = getRandomInt(0,3)
+
+      // add class to a particular div
+      $('section.header-16-sub').addClass(backgroundsPairs[pairNumber][0])
+      $('footer.footer-4').addClass(backgroundsPairs[pairNumber][1])
+
+      
 
 
 
